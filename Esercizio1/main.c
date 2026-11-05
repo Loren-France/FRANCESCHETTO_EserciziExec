@@ -7,35 +7,37 @@
 int main(void) {
     printf("Mini shell\n");
 
-    printf("Inserisci un comando: ");
-
     char command[256];
-    fgets(command, sizeof(command), stdin); // Legge il comando da input
 
-    command[strlen(command) - 1] = '\0';
+    do {
+        printf("Inserisci un comando: ");
 
-    pid_t pid = fork();
+        fgets(command, sizeof(command), stdin); // Legge il comando da input
 
-    if (pid == 0) {
-        // Processo figlio
+        command[strlen(command) - 1] = '\0';
 
-        char *args[] = {command, NULL};
+        pid_t pid = fork();
 
-        execvp(command, args);
+        if (pid == 0) {
+            // Processo figlio
 
-        perror("execvp");
-        exit(EXIT_FAILURE);
+            char *args[] = {command, NULL};
+
+            execvp(command, args);
+
+            perror("execvp");
+            exit(EXIT_FAILURE);
+        }
+
+        if (pid == -1) {
+            perror("Errore fork");
+            exit(EXIT_FAILURE);
+        }
+
+        int status;
+        wait(&status);
     }
-
-    if (pid == -1) {
-        perror("Errore fork");
-        exit(EXIT_FAILURE);
-    }
-
-    int status;
-    wait(&status);
-
-    printf("Processo %d terminato\n", WEXITSTATUS(status));
+    while (strcmp(command, "exit") != 0);
 
     return 0;
 }
