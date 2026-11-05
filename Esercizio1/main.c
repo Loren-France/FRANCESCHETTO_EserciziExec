@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>    /* fork(), execvp() */
+#include <sys/wait.h>  /* wait() */
+
+int main(void) {
+    printf("Mini shell\n");
+
+    printf("Inserisci un comando: ");
+
+    char command[256];
+    fgets(command, sizeof(command), stdin); // Legge il comando da input
+
+    command[strlen(command) - 1] = '\0';
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Processo figlio
+
+        char *args[] = {command, NULL};
+
+        execvp(command, args);
+
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == -1) {
+        perror("Errore fork");
+        exit(EXIT_FAILURE);
+    }
+
+    int status;
+    wait(&status);
+
+    printf("Processo %d terminato\n", WEXITSTATUS(status));
+
+    return 0;
+}
